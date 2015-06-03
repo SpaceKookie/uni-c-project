@@ -1,0 +1,20 @@
+data
+
+parent 	val
+		root
+
+left	val
+		root
+
+right	val
+		root
+
+val is the top value
+root is the bottom value (aka the starting point.)
+
+if(parent.val >= data):	
+	Check (left) and (right) val:
+		if right.val && right.val >= data && right.val > parent.root: 	[insert right]
+		else:															[insert parent]
+
+
