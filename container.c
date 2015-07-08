@@ -1,7 +1,9 @@
 /**
  * AUTHOR: KATHARINA 'spacekookie' SABEL <sabel.katharina@gmail.com>
+ * WEBSITE: www.katharinasabel.de
+ * (C) 2015 Katharina Sabel
+ *
  * LICENSE: MIT PUBLIC LICENSE
- *          (c) 2015
  *
  * NOTES: Implementiert ein Hafendock mit Container stapeln mit einer doppelt verketten Liste
  *        und einem minimalen Red-Black tree für das garantierte suchen (und damit einfügen) von O(log(n)).
@@ -10,8 +12,8 @@
  */
 
 // Define colours for the RB tree
-#include <malloc.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -21,8 +23,6 @@
 #define BLACK 0x000000
 
 /** Defines direction macros for the stack printer */
-// D/s code is D/s
-// TODO: For the love of god change these names before submitting it! :')
 #define DOM 0xFFF
 #define SUB 0x001
 
@@ -119,10 +119,6 @@ int insertContainer(struct TreeNode *root, int value) {
 	return -1;
 }
 
-int scrubTreeDebug(struct TreeNode *root) {
-	return 0;
-}
-
 /** Use one of the macros defined to determine direction */
 int printStack(struct StackNode *start, int direction) {
 	if (direction == SUB) {
@@ -139,6 +135,7 @@ int printStack(struct StackNode *start, int direction) {
 		return printStack(start->next, direction);
 	} else {
 		// Print from the top baby
+		// TODO: ?
 	}
 
 	return -1;
@@ -174,40 +171,54 @@ void freeStack(struct StackNode *root) {
 	root = NULL;
 }
 
-/** Frees and entire tree from memory */
+/** Frees and entire tree from memory ... recursion style */
 void freeTree(struct TreeNode *root) {
 	if (root == NULL)
 		return;
 
+	// Free children recursively.
 	freeTree(root->left);
 	freeTree(root->right);
 
+	// Then free the actual stack.
 	freeStack(root->stackRoot);
+
+	// And the node.
 	free(root);
+
+	// Then NULL the pointer so we can't abuse it anymore.
 	root = NULL;
 }
 
 int main(int argn, char **argv) {
 
-	// Create some file handles.
+	// Create some file handles and temporary variables to deal with the read-in data.
 	FILE *fp;
 	int lookAhead;
 	int c;
 
-	// Init the tree
+	if(argn != 2)
+	{
+		fputs("You didn't specify the correct amount of parameters!\n", stderr);
+		exit(2);
+	}
+
+	// Init the tree with an empty root, stack counter and temporary value for insertion.
 	struct TreeNode *treeRoot = createTreeNode(NULL);
 	size_t counts;
 	int value = 0;
 
-	fp = fopen("testdata/input3.data", "r");
+	fp = fopen(argv[1], "r");
 	if (fp == NULL) {
-		perror("Error in opening file");
-		return (-1);
+		fputs("The file path you provided is INVALID! Check the path and try again.\n", stderr);
+		exit(3);
 	}
 	while ((c = fgetc(fp)) != EOF) {
-
 		switch (c) {
-		case '\r':
+		
+		// Windows support! For a carriage return we check if afterwards there is a linebreak again.
+		// This prevents double line break which could cause weird issues in the application.
+	 	case '\r':
 			lookAhead = fgetc(fp);
 			if (lookAhead != '\n') {
 				fseek(fp, -1, SEEK_CUR);
@@ -217,7 +228,7 @@ int main(int argn, char **argv) {
 			// Insert the last container
 			insertContainer(treeRoot, value);
 
-			// Then do magic *dances*
+			// Then do magic *dances* ( Prints results c: )
 			counts = countConStacks(treeRoot);
 			printf("%zu ", counts);
 			printResultTreeStacks(treeRoot);
@@ -246,11 +257,21 @@ int main(int argn, char **argv) {
 			break;
 
 		default:
-			fputs("An error occured while handling the file!\n", stderr);
-			exit(-1);
+			fputs("Your input data was invalid! What are you trying to pull, champ?\n", stderr);
+			goto killer;		
 		}
 	}
+	
+	int healthy = 1;
 
-	fclose(fp);
-	return (0);
+	// This handles the error exit. More clean than function OR code douplication
+	// GOTO's have a place in this world. And tbh, this is one of them.
+	// If you think you need to deduct points for this...so be it!
+	killer:
+		freeTree(treeRoot);
+		fclose(fp);
+		
+		// Choose the apropriate error code to return
+		if(healthy) return 0;
+		else return 4;	
 }
