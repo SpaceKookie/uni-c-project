@@ -1,14 +1,14 @@
 /**
- * AUTHOR: KATHARINA 'spacekookie' SABEL <sabel.katharina@gmail.com>
- * WEBSITE: www.katharinasabel.de
- * (C) 2015 Katharina Sabel
  *
- * LICENSE: MIT PUBLIC LICENSE
- *
- * NOTES: Implementiert ein Hafendock mit Container stapeln mit einer doppelt verketten Liste
- *        und einem minimalen Red-Black tree für das garantierte suchen (und damit einfügen) von O(log(n)).
- *
- *
+ *         (`-,-,		AUTHOR: KATHARINA 'spacekookie' SABEL <sabel.katharina@gmail.com>
+ *         ('(_,( )		WEBSITE: www.katharinasabel.de
+ *          _   `_'	
+ *       __|_|__|_|_		(c) 2015 Katharina Sabel ( 570950 )
+ *     _|___________|__		LICENSE: MIT PUBLIC LICENSE
+ *    |o o o o o o o o/  	NOTE: Implementiert ein Hafendock mit Container Stapeln mit einer verketteten Liste
+ *   ~'`~'`~'`~'`~'`~'`~		und einem binären Suchbaum für das Einfügen und verwalten in log(n) Zeit!
+ *					
+ *				Das Schiff wurde von http://tinyurl.com/aokcmh2 'geklaut' :)
  */
 
 // Define colours for the RB tree
@@ -18,13 +18,8 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-/** Define colours for self balancing RB-Tree */
-#define RED 0xff0000
-#define BLACK 0x000000
-
 /** Defines direction macros for the stack printer */
-#define DOM 0xFFF
-#define SUB 0x001
+#define TOP 0xFFF
 
 #define SEP ','
 #define BUF_LENGTH 64
@@ -121,7 +116,7 @@ int insertContainer(struct TreeNode *root, int value) {
 
 /** Use one of the macros defined to determine direction */
 int printStack(struct StackNode *start, int direction) {
-	if (direction == SUB) {
+	if (direction == TOP) {
 		if (start == NULL)
 			return 1;
 
@@ -146,7 +141,7 @@ void printResultTreeStacks(struct TreeNode *root) {
 		return;
 
 	printResultTreeStacks(root->left);
-	printStack(root->stackRoot, SUB);
+	printStack(root->stackRoot, TOP);
 	printResultTreeStacks(root->right);
 }
 
@@ -200,7 +195,7 @@ int main(int argn, char **argv) {
 	if(argn != 2)
 	{
 		fputs("You didn't specify the correct amount of parameters!\n", stderr);
-		exit(2);
+		exit(EXIT_SUCCESS);
 	}
 
 	// Init the tree with an empty root, stack counter and temporary value for insertion.
@@ -211,7 +206,7 @@ int main(int argn, char **argv) {
 	fp = fopen(argv[1], "r");
 	if (fp == NULL) {
 		fputs("The file path you provided is INVALID! Check the path and try again.\n", stderr);
-		exit(3);
+		exit(EXIT_SUCCESS);
 	}
 	while ((c = fgetc(fp)) != EOF) {
 		switch (c) {
@@ -272,6 +267,6 @@ int main(int argn, char **argv) {
 		fclose(fp);
 		
 		// Choose the apropriate error code to return
-		if(healthy) return 0;
-		else return 4;	
+		if(healthy) return EXIT_SUCCESS;
+		else exit(EXIT_FAILURE);	
 }
